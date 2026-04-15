@@ -1,569 +1,208 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PetRescue — Mapa de Avistamientos</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --cream:#F7F3ED;--warm-dark:#1C1612;--orange:#D95E27;--orange-pale:#FBE8DA;
-    --orange-light:#F2905A;--text:#2A2218;--text-muted:#7A6F63;
-    --border:rgba(44,34,24,0.12);--green:#3A6B3E;--green-pale:#EAF3EB;
-    --red:#C0392B;--red-pale:#FDECEA;--amber:#B8860B;--amber-pale:#FFF8E6;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);}
-  body{display:flex;flex-direction:column;}
+<!--
+ @license
+ Copyright 2019 Google LLC. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+-->
+<html>
+  <head>
+    <title>Geocoding Service</title>
+    <script>
+      /**
+       * @license
+       * Copyright 2019 Google LLC. All Rights Reserved.
+       * SPDX-License-Identifier: Apache-2.0
+       */
+      let map;
+      let marker;
+      let geocoder;
+      let responseDiv;
+      let response;
 
-  /* NAV */
-  nav{flex-shrink:0;background:rgba(247,243,237,0.97);backdrop-filter:blur(12px);
-    border-bottom:0.5px solid var(--border);padding:12px 20px;
-    display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:1000;}
-  .nav-logo{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--warm-dark);
-    display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0;}
-  .logo-dot{width:26px;height:26px;background:var(--orange);border-radius:50%;
-    display:flex;align-items:center;justify-content:center;font-size:12px;}
-  .nav-tabs{display:flex;gap:4px;background:rgba(44,34,24,0.06);border-radius:10px;padding:3px;}
-  .nav-tab{padding:6px 14px;border-radius:8px;font-size:13px;text-decoration:none;
-    color:var(--text-muted);transition:all 0.2s;white-space:nowrap;}
-  .nav-tab.active{background:white;color:var(--text);font-weight:500;
-    box-shadow:0 1px 4px rgba(28,22,18,0.08);}
-  .btn-report-nav{padding:8px 16px;background:var(--orange);color:white;border:none;
-    border-radius:100px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
-    cursor:pointer;white-space:nowrap;transition:all 0.2s;flex-shrink:0;}
-  .btn-report-nav:hover{background:#c0521f;}
+      function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 8,
+          center: { lat: -34.397, lng: 150.644 },
+          mapTypeControl: false,
+        });
+        geocoder = new google.maps.Geocoder();
 
-  /* LAYOUT */
-  .main{flex:1;display:flex;overflow:hidden;position:relative;}
+        const inputText = document.createElement("input");
 
-  /* MAP */
-  #map{flex:1;z-index:1;}
+        inputText.type = "text";
+        inputText.placeholder = "Enter a location";
 
-  /* SIDEBAR */
-  .sidebar{width:340px;flex-shrink:0;background:white;border-left:0.5px solid var(--border);
-    display:flex;flex-direction:column;overflow:hidden;z-index:2;}
-  .sidebar-header{padding:16px 18px 12px;border-bottom:0.5px solid var(--border);flex-shrink:0;}
-  .live-badge{display:inline-flex;align-items:center;gap:5px;background:var(--red-pale);
-    color:var(--red);font-size:11px;font-weight:500;padding:3px 9px;border-radius:100px;margin-bottom:8px;}
-  .live-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1.2s infinite;}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-  .sidebar-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--warm-dark);margin-bottom:3px;}
-  .sidebar-sub{font-size:12px;color:var(--text-muted);}
+        const submitButton = document.createElement("input");
 
-  /* FILTERS */
-  .filter-bar{padding:10px 14px;border-bottom:0.5px solid var(--border);
-    display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;}
-  .chip{padding:5px 11px;border-radius:100px;font-size:12px;cursor:pointer;
-    border:0.5px solid var(--border);background:transparent;color:var(--text-muted);
-    font-family:'DM Sans',sans-serif;transition:all 0.2s;}
-  .chip.active{background:var(--orange);color:white;border-color:var(--orange);}
-  .chip:hover:not(.active){background:var(--cream);}
+        submitButton.type = "button";
+        submitButton.value = "Geocode";
+        submitButton.classList.add("button", "button-primary");
 
-  /* LIST */
-  .reports-list{flex:1;overflow-y:auto;padding:10px;}
-  .report-card{background:white;border:0.5px solid var(--border);border-radius:14px;
-    padding:13px;margin-bottom:9px;cursor:pointer;transition:all 0.2s;}
-  .report-card:hover{border-color:rgba(217,94,39,0.4);box-shadow:0 4px 14px rgba(217,94,39,0.08);}
-  .report-card.highlighted{border-color:var(--orange);box-shadow:0 0 0 3px rgba(217,94,39,0.1);}
-  .rc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
-  .rc-desc{font-size:14px;font-weight:500;color:var(--warm-dark);line-height:1.4;}
-  .rc-time{font-size:11px;color:var(--text-muted);white-space:nowrap;flex-shrink:0;margin-top:1px;}
-  .rc-foto{width:100%;height:88px;object-fit:cover;border-radius:9px;margin-bottom:8px;}
-  .rc-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-  .rc-loc{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:3px;min-width:0;}
-  .rc-loc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .rc-badge{padding:3px 8px;border-radius:100px;font-size:11px;font-weight:500;flex-shrink:0;}
-  .badge-perdido{background:var(--red-pale);color:var(--red);}
-  .badge-avistado{background:var(--amber-pale);color:var(--amber);}
-  .badge-encontrado{background:var(--green-pale);color:var(--green);}
-  .rc-reporter{font-size:11px;color:var(--text-muted);margin-top:5px;}
-  .rc-tel{font-size:11px;color:var(--text-muted);margin-top:2px;}
-  .empty-list{text-align:center;padding:40px 16px;color:var(--text-muted);font-size:14px;}
-  .empty-icon{font-size:36px;margin-bottom:10px;}
+        const clearButton = document.createElement("input");
 
-  /* AUTH WALL */
-  .auth-wall{display:none;position:absolute;inset:0;background:rgba(247,243,237,0.96);
-    backdrop-filter:blur(8px);z-index:500;align-items:center;justify-content:center;
-    flex-direction:column;text-align:center;padding:32px;}
-  .auth-wall.show{display:flex;}
-  .auth-wall-icon{font-size:52px;margin-bottom:16px;}
-  .auth-wall h2{font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--warm-dark);margin-bottom:8px;}
-  .auth-wall p{font-size:14px;color:var(--text-muted);margin-bottom:24px;max-width:300px;}
-  .btn-login-wall{padding:12px 28px;background:var(--orange);color:white;border:none;
-    border-radius:100px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;
-    cursor:pointer;text-decoration:none;transition:all 0.2s;}
-  .btn-login-wall:hover{background:#c0521f;}
+        clearButton.type = "button";
+        clearButton.value = "Clear";
+        clearButton.classList.add("button", "button-secondary");
+        response = document.createElement("pre");
+        response.id = "response";
+        response.innerText = "";
+        responseDiv = document.createElement("div");
+        responseDiv.id = "response-container";
+        responseDiv.appendChild(response);
 
-  /* MODAL */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(28,22,18,0.55);
-    z-index:9999;align-items:flex-end;justify-content:center;}
-  .modal-overlay.open{display:flex;}
-  .modal{background:white;border-radius:24px 24px 0 0;padding:24px 22px 40px;
-    width:100%;max-width:560px;max-height:92vh;overflow-y:auto;}
-  .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
-  .modal h2{font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--warm-dark);margin-bottom:4px;}
-  .modal-sub{font-size:14px;color:var(--text-muted);margin-bottom:20px;}
-  label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;}
-  input[type="text"],select,textarea{width:100%;padding:11px 14px;border:0.5px solid var(--border);
-    border-radius:12px;background:var(--cream);font-family:'DM Sans',sans-serif;font-size:15px;
-    color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:14px;}
-  input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(217,94,39,0.1);}
-  textarea{resize:vertical;min-height:80px;}
+        const instructionsElement = document.createElement("p");
 
-  /* Mapa de selección */
-  #pickMap{width:100%;height:220px;border-radius:14px;margin-bottom:6px;border:0.5px solid var(--border);overflow:hidden;}
-  .pick-hint{font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:5px;}
-  .btn-locate{width:100%;padding:10px;background:var(--cream);color:var(--text);
-    border:0.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;
-    font-size:14px;cursor:pointer;margin-bottom:10px;transition:all 0.2s;
-    display:flex;align-items:center;justify-content:center;gap:6px;}
-  .btn-locate:hover{border-color:var(--orange);color:var(--orange);}
-  #coordDisplay{font-size:12px;color:var(--green);margin-bottom:14px;min-height:18px;font-weight:500;}
+        instructionsElement.id = "instructions";
+        instructionsElement.innerHTML =
+          "<strong>Instructions</strong>: Enter an address in the textbox to geocode or click on the map to reverse geocode.";
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputText);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(submitButton);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(clearButton);
+        map.controls[google.maps.ControlPosition.LEFT_TOP].push(
+          instructionsElement
+        );
+        map.controls[google.maps.ControlPosition.LEFT_TOP].push(responseDiv);
+        marker = new google.maps.Marker({
+          map,
+        });
+        map.addListener("click", (e) => {
+          geocode({ location: e.latLng });
+        });
+        submitButton.addEventListener("click", () =>
+          geocode({ address: inputText.value })
+        );
+        clearButton.addEventListener("click", () => {
+          clear();
+        });
+        clear();
+      }
 
-  /* Foto upload */
-  .photo-upload-area{width:100%;padding:16px;border:1.5px dashed var(--border);border-radius:12px;
-    text-align:center;cursor:pointer;background:var(--cream);margin-bottom:14px;transition:border-color 0.2s;}
-  .photo-upload-area:hover{border-color:var(--orange);}
-  .photo-upload-area input{display:none;}
-  .foto-preview{width:100%;height:120px;object-fit:cover;border-radius:10px;display:none;margin-bottom:14px;}
+      function clear() {
+        marker.setMap(null);
+      }
 
-  .btn-save{width:100%;padding:14px;background:var(--orange);color:white;border:none;
-    border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;
-    cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
-  .btn-save:hover{background:#c0521f;}
-  .btn-save:disabled{background:#ccc;cursor:not-allowed;}
-  .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;display:none;}
-  .alert.error{background:var(--red-pale);color:var(--red);display:block;}
-  .alert.success{background:var(--green-pale);color:var(--green);display:block;}
-  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg)}}
+      function geocode(request) {
+        clear();
+        geocoder
+          .geocode(request)
+          .then((result) => {
+            const { results } = result;
 
-  /* Google Maps info window */
-  .gm-popup{font-family:'DM Sans',sans-serif;min-width:180px;max-width:240px;}
-  .gm-popup-badge{display:inline-block;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500;margin-bottom:7px;}
-  .gm-popup-desc{font-size:13px;color:#2A2218;margin-bottom:5px;line-height:1.4;}
-  .gm-popup-meta{font-size:11px;color:#7A6F63;}
-  .gm-popup-foto{width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:8px;}
+            map.setCenter(results[0].geometry.location);
+            marker.setPosition(results[0].geometry.location);
+            marker.setMap(map);
+            response.innerText = JSON.stringify(result, null, 2);
+            return results;
+          })
+          .catch((e) => {
+            alert("Geocode was not successful for the following reason: " + e);
+          });
+      }
 
-  /* MOBILE */
-  @media(max-width:720px){
-    body{overflow:auto;}
-    .main{flex-direction:column;height:auto;overflow:visible;}
-    #map{height:55vw;min-height:260px;max-height:380px;}
-    .sidebar{width:100%;border-left:none;border-top:0.5px solid var(--border);
-      height:auto;max-height:45vh;overflow:hidden;}
-    .reports-list{max-height:calc(45vh - 110px);}
-    .nav-tabs{display:none;}
-    .modal-overlay{align-items:flex-end;}
-  }
-</style>
-</head>
-<body>
+      window.initMap = initMap;
+    </script>
+    <style>
+      /**
+       * @license
+       * Copyright 2019 Google LLC. All Rights Reserved.
+       * SPDX-License-Identifier: Apache-2.0
+       */
+      /**
+       * Always set the map height explicitly to define the size of the div element
+       * that contains the map. 
+       */
+      #map {
+        height: 50%;
+      }
 
-<!-- NAV -->
-<nav>
-  <a href="index.html" class="nav-logo">
-    <div class="logo-dot">🐾</div>
-    PetRescue
-  </a>
-  <div class="nav-tabs">
-    <a href="dashboard.html" class="nav-tab">Mis mascotas</a>
-    <a href="mapa.html" class="nav-tab active">Mapa</a>
-  </div>
-  <button class="btn-report-nav" id="btnReportNav" onclick="checkAuthThenReport()">+ Reportar avistamiento</button>
-</nav>
+      /* Optional: Makes the sample page fill the window. */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
 
-<div class="main">
-  <!-- MAPA -->
-  <div id="map"></div>
+      input[type="text"] {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 18px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        line-height: 40px;
+        margin-right: 0;
+        min-width: 25%;
+      }
 
-  <!-- AUTH WALL — se muestra si no hay sesión -->
-  <div class="auth-wall" id="authWall">
-    <div class="auth-wall-icon">🔐</div>
-    <h2>Inicia sesión para ver el mapa</h2>
-    <p>El mapa colaborativo y los reportes de avistamientos están disponibles solo para usuarios registrados.</p>
-    <a href="login.html" class="btn-login-wall">Iniciar sesión →</a>
-  </div>
+      input[type="button"] {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 18px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        height: 40px;
+        cursor: pointer;
+        margin-left: 5px;
+      }
+      input[type="button"]:hover {
+        background: rgb(235, 235, 235);
+      }
+      input[type="button"].button-primary {
+        background-color: #1a73e8;
+        color: white;
+      }
+      input[type="button"].button-primary:hover {
+        background-color: #1765cc;
+      }
+      input[type="button"].button-secondary {
+        background-color: white;
+        color: #1a73e8;
+      }
+      input[type="button"].button-secondary:hover {
+        background-color: #d2e3fc;
+      }
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="live-badge"><div class="live-dot"></div> En vivo</div>
-      <div class="sidebar-title">Avistamientos</div>
-      <div class="sidebar-sub" id="countLabel">Cargando…</div>
-    </div>
-    <div class="filter-bar">
-      <button class="chip active" onclick="setFilter('todos',this)">Todos</button>
-      <button class="chip" onclick="setFilter('perdido',this)">Perdidos</button>
-      <button class="chip" onclick="setFilter('avistado',this)">Avistados</button>
-      <button class="chip" onclick="setFilter('encontrado',this)">Encontrados</button>
-    </div>
-    <div class="reports-list" id="reportsList">
-      <div class="empty-list"><div class="empty-icon">🗺️</div>Cargando reportes…</div>
-    </div>
-  </div>
-</div>
+      #response-container {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 18px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        overflow: auto;
+        max-height: 50%;
+        max-width: 90%;
+        background-color: rgba(255, 255, 255, 0.95);
+        font-size: small;
+      }
 
-<!-- MODAL REPORTE -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <h2>Reportar avistamiento</h2>
-    <p class="modal-sub">¿Viste a una mascota sin dueño? Ayuda a su familia a encontrarla.</p>
-    <div id="modalAlert" class="alert"></div>
-
-    <label>Tipo de reporte *</label>
-    <select id="rTipo">
-      <option value="">Selecciona…</option>
-      <option value="perdido">🔴 Mascota perdida (soy el dueño)</option>
-      <option value="avistado">🟡 Vi una mascota sin dueño</option>
-      <option value="encontrado">🟢 Encontré a una mascota</option>
-    </select>
-
-    <label>Descripción de la mascota *</label>
-    <textarea id="rDesc" placeholder="Ej: Perro café mediano, collar azul, muy amigable. Responde al nombre Luna."></textarea>
-
-    <label>Teléfono de contacto</label>
-    <input type="text" id="rTel" placeholder="+52 222 000 0000 (opcional)">
-
-    <label>Foto (opcional)</label>
-    <div class="photo-upload-area" onclick="document.getElementById('rFotoInput').click()">
-      <input type="file" id="rFotoInput" accept="image/*" onchange="previewFoto(event)">
-      <img id="fotoPreview" class="foto-preview">
-      <div id="fotoLabel" style="font-size:13px;color:var(--text-muted);">📷 Toca para subir una foto</div>
-    </div>
-
-    <label>Ubicación exacta *</label>
-    <button class="btn-locate" onclick="usarMiUbicacion()">📍 Usar mi ubicación actual</button>
-    <div id="pickMap"></div>
-    <div class="pick-hint">📌 O haz clic en el mapa para marcar el punto exacto</div>
-    <div id="coordDisplay"></div>
-
-    <button class="btn-save" id="btnGuardar" onclick="guardarReporte()">Enviar reporte →</button>
-  </div>
-</div>
-
-<!-- Google Maps — reemplaza TU_API_KEY -->
-<script>
-  window.initMap = function() { window._mapReady = true; if (window._initMapCb) window._initMapCb(); };
-</script>
-<script async defer
-  src="https://maps.googleapis.com/maps/api/js?key=TU_GOOGLE_MAPS_API_KEY&callback=initMap&libraries=marker">
-</script>
-
-<script type="module">
-import { auth, db, storage } from './firebase-config.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-const PUEBLA = { lat: 19.0414, lng: -98.2063 };
-let map, pickMap, pickMarker;
-let reporteCoords = null;
-let fotoFile = null;
-let allReportes = [];
-let gmMarkers = {};
-let currentFilter = 'todos';
-let currentUser = null;
-
-// ── AUTH GUARD ───────────────────────────────────────────
-onAuthStateChanged(auth, user => {
-  currentUser = user;
-  if (!user) {
-    document.getElementById('authWall').classList.add('show');
-    document.getElementById('btnReportNav').style.display = 'none';
-  } else {
-    document.getElementById('authWall').classList.remove('show');
-    document.getElementById('btnReportNav').style.display = 'flex';
-    initGoogleMap();
-    listenReportes();
-  }
-});
-
-// ── INICIALIZAR GOOGLE MAPS ──────────────────────────────
-function initGoogleMap() {
-  function doInit() {
-    map = new google.maps.Map(document.getElementById('map'), {
-      center: PUEBLA,
-      zoom: 13,
-      mapId: 'petrescue_map',
-      disableDefaultUI: false,
-      zoomControl: true,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: true,
-      styles: [
-        { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', stylers: [{ visibility: 'simplified' }] }
-      ]
-    });
-  }
-  if (window._mapReady) doInit();
-  else window._initMapCb = doInit;
-}
-
-// ── ESCUCHAR REPORTES EN TIEMPO REAL ────────────────────
-function listenReportes() {
-  const q = query(collection(db, 'avistamientos'), orderBy('creadoEn', 'desc'));
-  onSnapshot(q, snap => {
-    allReportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderTodo();
-  });
-}
-
-function renderTodo() {
-  // Limpiar marcadores existentes
-  Object.values(gmMarkers).forEach(m => m.setMap(null));
-  gmMarkers = {};
-
-  const filtrados = currentFilter === 'todos'
-    ? allReportes
-    : allReportes.filter(r => r.tipo === currentFilter);
-
-  document.getElementById('countLabel').textContent =
-    `${filtrados.length} reporte${filtrados.length !== 1 ? 's' : ''} · Puebla`;
-
-  // Lista sidebar
-  const lista = document.getElementById('reportsList');
-  if (filtrados.length === 0) {
-    lista.innerHTML = `<div class="empty-list"><div class="empty-icon">🔍</div>Sin reportes para este filtro.</div>`;
-    return;
-  }
-  lista.innerHTML = filtrados.map(r => `
-    <div class="report-card" id="card-${r.id}" onclick="focusReport('${r.id}')">
-      <div class="rc-header">
-        <div class="rc-desc">${truncate(r.descripcion, 50)}</div>
-        <div class="rc-time">${timeAgo(r.creadoEn)}</div>
-      </div>
-      ${r.fotoUrl ? `<img src="${r.fotoUrl}" class="rc-foto">` : ''}
-      <div class="rc-footer">
-        <div class="rc-loc">📍 <span>${r.direccion || 'Puebla'}</span></div>
-        <span class="rc-badge badge-${r.tipo}">${labelTipo(r.tipo)}</span>
-      </div>
-      ${r.reportadoPor ? `<div class="rc-reporter">👤 ${r.reportadoPor}</div>` : ''}
-      ${r.telefono ? `<div class="rc-tel">📞 ${r.telefono}</div>` : ''}
-    </div>
-  `).join('');
-
-  // Marcadores en Google Maps
-  if (!map) return;
-  filtrados.forEach(r => {
-    if (!r.lat || !r.lng) return;
-    const pinColor = { perdido:'#C0392B', avistado:'#D4A017', encontrado:'#3A6B3E' }[r.tipo] || '#D95E27';
-
-    const pin = new google.maps.marker.PinElement({
-      background: pinColor,
-      borderColor: '#fff',
-      glyphColor: '#fff',
-      scale: 1.2
-    });
-
-    const marker = new google.maps.marker.AdvancedMarkerElement({
-      map,
-      position: { lat: r.lat, lng: r.lng },
-      content: pin.element,
-      title: r.descripcion || ''
-    });
-
-    const infoContent = `
-      <div class="gm-popup">
-        ${r.fotoUrl ? `<img src="${r.fotoUrl}" class="gm-popup-foto">` : ''}
-        <span class="gm-popup-badge badge-${r.tipo}" style="background:${pinColor}15;color:${pinColor};">${labelTipo(r.tipo)}</span>
-        <div class="gm-popup-desc">${r.descripcion || ''}</div>
-        <div class="gm-popup-meta">${r.direccion || 'Puebla'} · ${timeAgo(r.creadoEn)}</div>
-        ${r.telefono ? `<div class="gm-popup-meta">📞 ${r.telefono}</div>` : ''}
-      </div>`;
-
-    const infoWindow = new google.maps.InfoWindow({ content: infoContent, maxWidth: 260 });
-    marker.addListener('click', () => {
-      infoWindow.open({ anchor: marker, map });
-      highlightCard(r.id);
-    });
-    gmMarkers[r.id] = marker;
-  });
-}
-
-window.focusReport = function(id) {
-  const r = allReportes.find(x => x.id === id);
-  if (!r || !r.lat || !r.lng || !map) return;
-  map.panTo({ lat: r.lat, lng: r.lng });
-  map.setZoom(16);
-  setTimeout(() => google.maps.event.trigger(gmMarkers[id], 'click'), 600);
-  highlightCard(id);
-}
-
-function highlightCard(id) {
-  document.querySelectorAll('.report-card').forEach(c => c.classList.remove('highlighted'));
-  const card = document.getElementById('card-' + id);
-  card?.classList.add('highlighted');
-  card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-window.setFilter = function(tipo, btn) {
-  currentFilter = tipo;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  renderTodo();
-}
-
-// ── MODAL ────────────────────────────────────────────────
-window.checkAuthThenReport = function() {
-  if (!currentUser) { window.location.href = 'login.html'; return; }
-  openModal();
-}
-
-window.openModal = function() {
-  document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  setTimeout(initPickMap, 200);
-}
-
-window.closeModal = function() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-  ['rDesc','rTel'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('rTipo').value = '';
-  document.getElementById('fotoPreview').style.display = 'none';
-  document.getElementById('fotoLabel').style.display = 'block';
-  document.getElementById('coordDisplay').textContent = '';
-  document.getElementById('modalAlert').className = 'alert';
-  if (pickMarker) { pickMarker.setMap(null); pickMarker = null; }
-  reporteCoords = null; fotoFile = null;
-  const btn = document.getElementById('btnGuardar');
-  btn.disabled = false; btn.innerHTML = 'Enviar reporte →';
-}
-
-function initPickMap() {
-  if (!window._mapReady) return;
-  if (!pickMap) {
-    pickMap = new google.maps.Map(document.getElementById('pickMap'), {
-      center: PUEBLA, zoom: 13,
-      disableDefaultUI: true,
-      zoomControl: true,
-      clickableIcons: false
-    });
-    pickMap.addListener('click', e => {
-      setPickCoords(e.latLng.lat(), e.latLng.lng());
-    });
-  }
-}
-
-function setPickCoords(lat, lng) {
-  reporteCoords = { lat, lng };
-  if (pickMarker) pickMarker.setMap(null);
-  pickMarker = new google.maps.Marker({
-    position: { lat, lng }, map: pickMap,
-    icon: { url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }
-  });
-  document.getElementById('coordDisplay').textContent = `✅ Ubicación marcada: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-}
-
-window.usarMiUbicacion = function() {
-  if (!navigator.geolocation) return alert('Tu navegador no soporta geolocalización.');
-  navigator.geolocation.getCurrentPosition(pos => {
-    const { latitude: lat, longitude: lng } = pos.coords;
-    setPickCoords(lat, lng);
-    pickMap?.panTo({ lat, lng });
-    pickMap?.setZoom(16);
-  }, () => alert('No se pudo obtener tu ubicación. Verifica los permisos del navegador.'));
-}
-
-window.previewFoto = function(e) {
-  const file = e.target.files[0]; if (!file) return;
-  fotoFile = file;
-  const img = document.getElementById('fotoPreview');
-  img.src = URL.createObjectURL(file);
-  img.style.display = 'block';
-  document.getElementById('fotoLabel').style.display = 'none';
-}
-
-// ── GUARDAR REPORTE ──────────────────────────────────────
-window.guardarReporte = async function() {
-  if (!currentUser) { window.location.href = 'login.html'; return; }
-  const tipo = document.getElementById('rTipo').value;
-  const desc = document.getElementById('rDesc').value.trim();
-  if (!tipo) return showModalAlert('Selecciona el tipo de reporte.', 'error');
-  if (!desc) return showModalAlert('Describe a la mascota.', 'error');
-  if (!reporteCoords) return showModalAlert('Marca la ubicación en el mapa.', 'error');
-
-  const btn = document.getElementById('btnGuardar');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div>';
-
-  try {
-    // Subir foto si hay
-    let fotoUrl = null;
-    if (fotoFile) {
-      const sRef = ref(storage, `avistamientos/${currentUser.uid}/${Date.now()}_${fotoFile.name}`);
-      await uploadBytes(sRef, fotoFile);
-      fotoUrl = await getDownloadURL(sRef);
-    }
-
-    // Geocoding inverso con Nominatim
-    let direccion = 'Puebla, México';
-    try {
-      const geo = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${reporteCoords.lat}&lon=${reporteCoords.lng}&format=json`,
-        { headers: { 'Accept-Language': 'es' } }
-      );
-      const gd = await geo.json();
-      const a = gd.address;
-      direccion = [a.road, a.suburb, a.city || a.town].filter(Boolean).join(', ') || direccion;
-    } catch {}
-
-    await addDoc(collection(db, 'avistamientos'), {
-      tipo,
-      descripcion:   desc,
-      telefono:      document.getElementById('rTel').value.trim() || null,
-      lat:           reporteCoords.lat,
-      lng:           reporteCoords.lng,
-      direccion,
-      fotoUrl,
-      uid:           currentUser.uid,
-      reportadoPor:  currentUser.displayName || currentUser.email,
-      creadoEn:      serverTimestamp(),
-    });
-
-    closeModal();
-    map?.panTo({ lat: reporteCoords.lat, lng: reporteCoords.lng });
-    map?.setZoom(15);
-  } catch(e) {
-    showModalAlert('Error al enviar: ' + e.message, 'error');
-    btn.disabled = false;
-    btn.innerHTML = 'Enviar reporte →';
-  }
-}
-
-// ── UTILIDADES ───────────────────────────────────────────
-function labelTipo(t) {
-  return { perdido:'🔴 Perdido', avistado:'🟡 Avistado', encontrado:'🟢 Encontrado' }[t] || t;
-}
-function timeAgo(ts) {
-  if (!ts) return 'Ahora';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  const s = Math.floor((Date.now() - d) / 1000);
-  if (s < 60) return 'Hace un momento';
-  if (s < 3600) return `Hace ${Math.floor(s/60)} min`;
-  if (s < 86400) return `Hace ${Math.floor(s/3600)} h`;
-  return `Hace ${Math.floor(s/86400)} días`;
-}
-function truncate(str, n) {
-  if (!str) return 'Sin descripción';
-  return str.length > n ? str.substring(0, n) + '…' : str;
-}
-function showModalAlert(msg, type) {
-  const b = document.getElementById('modalAlert');
-  b.textContent = msg; b.className = 'alert ' + type;
-}
-
-// Cerrar modal al tocar fuera
-document.getElementById('modalOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalOverlay')) window.closeModal();
-});
-</script>
-</body>
+      #instructions {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 18px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        padding: 1rem;
+        font-size: medium;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=INSERT_YOUR_API_KEY&callback=initMap&v=weekly&solution_channel=GMP_CCS_geocodingservice_v2"
+      defer
+    ></script>
+  </body>
 </html>
