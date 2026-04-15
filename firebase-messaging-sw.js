@@ -1,14 +1,15 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
-// 👇 Mismos valores que firebase-config.js
 firebase.initializeApp({
-  apiKey:            "TU_API_KEY",
-  authDomain:        "TU_PROYECTO.firebaseapp.com",
-  projectId:         "TU_PROYECTO",
-  storageBucket:     "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId:             "TU_APP_ID"
+  apiKey: "AIzaSyDb6fozFyn_7NBofGztR03VI2Kfzx41ez0",
+  authDomain: "petrescue-c087f.firebaseapp.com",
+  projectId: "petrescue-c087f",
+  storageBucket: "petrescue-c087f.firebasestorage.app",
+  messagingSenderId: "1029578348032",
+  appId: "1:1029578348032:web:65b4b82e6b826cb355eae5",
+  measurementId: "G-YXN9Y4QS4E"
+};
 });
 
 const messaging = firebase.messaging();
