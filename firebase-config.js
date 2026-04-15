@@ -9,19 +9,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-// 👇 Reemplaza estos valores con los de tu proyecto
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey:            "TU_API_KEY",
-  authDomain:        "TU_PROYECTO.firebaseapp.com",
-  projectId:         "TU_PROYECTO",
-  storageBucket:     "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId:             "TU_APP_ID"
+  apiKey: "AIzaSyDb6fozFyn_7NBofGztR03VI2Kfzx41ez0",
+  authDomain: "petrescue-c087f.firebaseapp.com",
+  projectId: "petrescue-c087f",
+  storageBucket: "petrescue-c087f.firebasestorage.app",
+  messagingSenderId: "1029578348032",
+  appId: "1:1029578348032:web:65b4b82e6b826cb355eae5",
+  measurementId: "G-YXN9Y4QS4E"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-export const auth    = getAuth(app);
-export const db      = getFirestore(app);
-export const storage = getStorage(app);
+const analytics = getAnalytics(app);
