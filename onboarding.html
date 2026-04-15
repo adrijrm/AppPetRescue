@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PetRescue — Registro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F3ED; --warm-dark: #1C1612; --orange: #D95E27;
+    --orange-pale: #FBE8DA; --text: #2A2218; --text-muted: #7A6F63;
+    --border: rgba(44,34,24,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif; background: var(--cream);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .progress-bar {
+    width: 100%; max-width: 420px; margin-bottom: 32px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .step-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500;
+    border: 1.5px solid var(--border);
+    background: white; color: var(--text-muted);
+    transition: all 0.3s;
+  }
+  .step-dot.active { background: var(--orange); border-color: var(--orange); color: white; }
+  .step-dot.done { background: #3A6B3E; border-color: #3A6B3E; color: white; }
+  .step-line { flex: 1; height: 1px; background: var(--border); }
+  .step-label {
+    font-size: 12px; color: var(--text-muted); margin-top: 4px; text-align: center;
+  }
+  .step-progress { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+
+  .card {
+    background: white; border-radius: 24px;
+    padding: clamp(32px, 5vw, 52px);
+    width: 100%; max-width: 420px;
+    border: 0.5px solid var(--border);
+    box-shadow: 0 20px 50px rgba(28,22,18,0.07);
+  }
+  .skip-link {
+    position: fixed; top: 24px; right: 24px;
+    color: var(--text-muted); font-size: 14px;
+    text-decoration: none; transition: color 0.2s;
+  }
+  .skip-link:hover { color: var(--text); }
+  .step-panel { display: none; flex-direction: column; align-items: center; text-align: center; }
+  .step-panel.active { display: flex; }
+  .step-emoji {
+    font-size: 64px; margin-bottom: 24px;
+    filter: none;
+    animation: floatIn 0.4s ease-out;
+  }
+  @keyframes floatIn { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+  h2 {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600;
+    color: var(--warm-dark); letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  p { font-size: 15px; color: var(--text-muted); line-height: 1.65; margin-bottom: 32px; }
+  .btn-next {
+    width: 100%; padding: 14px;
+    background: var(--orange); color: white;
+    border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500;
+    cursor: pointer; transition: background 0.2s, transform 0.15s;
+  }
+  .btn-next:hover { background: #c0521f; transform: translateY(-1px); }
+  .feature-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-bottom: 28px;
+  }
+  .pill {
+    background: var(--orange-pale); color: var(--orange);
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 13px; font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<a href="login.html" class="skip-link">Saltar →</a>
+
+<div class="progress-bar">
+  <div class="step-progress">
+    <div class="step-dot active" id="dot1">1</div>
+    <div class="step-label">Foto</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step-progress">
+    <div class="step-dot" id="dot2">2</div>
+    <div class="step-label">GPS</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step-progress">
+    <div class="step-dot" id="dot3">3</div>
+    <div class="step-label">Red</div>
+  </div>
+</div>
+
+<div class="card">
+  <!-- PASO 1 -->
+  <div class="step-panel active" id="step1">
+    <div class="step-emoji">📸</div>
+    <h2>Registra a tu mascota</h2>
+    <p>Una foto del hocico crea una identidad digital única. Sin collar, sin microchip — nuestra IA hace el resto.</p>
+    <div class="feature-pills">
+      <span class="pill">IA biométrica</span>
+      <span class="pill">Sin microchip</span>
+      <span class="pill">2 minutos</span>
+    </div>
+    <button class="btn-next" onclick="goTo(2)">Siguiente →</button>
+  </div>
+
+  <!-- PASO 2 -->
+  <div class="step-panel" id="step2">
+    <div class="step-emoji">🗺️</div>
+    <h2>GPS colaborativo</h2>
+    <p>La comunidad de Puebla reporta avistamientos en tiempo real. Cuando tu mascota se pierda, activamos la red completa.</p>
+    <div class="feature-pills">
+      <span class="pill">Tiempo real</span>
+      <span class="pill">Toda Puebla</span>
+      <span class="pill">Alertas</span>
+    </div>
+    <button class="btn-next" onclick="goTo(3)">Siguiente →</button>
+  </div>
+
+  <!-- PASO 3 -->
+  <div class="step-panel" id="step3">
+    <div class="step-emoji">🏠</div>
+    <h2>Red de refugios</h2>
+    <p>Conectado a todos los refugios y veterinarios de Puebla. Si tu mascota aparece, recibes una notificación al instante.</p>
+    <div class="feature-pills">
+      <span class="pill">Refugios</span>
+      <span class="pill">Veterinarios</span>
+      <span class="pill">100% gratis</span>
+    </div>
+    <button class="btn-next" onclick="window.location.href='login.html'">Crear cuenta gratis →</button>
+  </div>
+</div>
+
+<script>
+let current = 1;
+function goTo(step) {
+  document.getElementById('step' + current).classList.remove('active');
+  const dot = document.getElementById('dot' + current);
+  dot.classList.remove('active');
+  dot.classList.add('done');
+  dot.textContent = '✓';
+  current = step;
+  document.getElementById('step' + current).classList.add('active');
+  document.getElementById('dot' + current).classList.add('active');
+}
+</script>
+</body>
+</html>

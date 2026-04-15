@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PetRescue — Mis Mascotas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#F7F3ED;--warm-dark:#1C1612;--orange:#D95E27;--orange-pale:#FBE8DA;--orange-light:#F2905A;--text:#2A2218;--text-muted:#7A6F63;--border:rgba(44,34,24,0.12);--green:#3A6B3E;--green-pale:#EAF3EB;--red:#C0392B;--red-pale:#FDECEA;--card:#FFFFFF;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;background:rgba(247,243,237,0.96);backdrop-filter:blur(12px);border-bottom:0.5px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .nav-logo{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--warm-dark);display:flex;align-items:center;gap:8px;text-decoration:none;}
+  .logo-dot{width:26px;height:26px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .nav-tabs{display:flex;gap:4px;background:rgba(44,34,24,0.06);border-radius:10px;padding:3px;}
+  .nav-tab{padding:6px 14px;border-radius:8px;font-size:13px;text-decoration:none;color:var(--text-muted);transition:all 0.2s;}
+  .nav-tab.active{background:white;color:var(--text);font-weight:500;box-shadow:0 1px 4px rgba(28,22,18,0.08);}
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .user-chip{font-size:13px;color:var(--text-muted);background:var(--cream);padding:5px 12px;border-radius:100px;border:0.5px solid var(--border);}
+  .btn-sm{padding:7px 14px;border-radius:100px;border:0.5px solid var(--border);background:transparent;color:var(--text);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+  .btn-sm:hover{background:rgba(44,34,24,0.06);}
+
+  .page{max-width:960px;margin:0 auto;padding:32px 24px;}
+
+  /* TOAST */
+  .toast-container{position:fixed;top:80px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;}
+  .toast{background:var(--warm-dark);color:white;padding:14px 18px;border-radius:14px;
+    font-size:14px;max-width:320px;box-shadow:0 8px 24px rgba(28,22,18,0.2);
+    display:flex;align-items:flex-start;gap:12px;pointer-events:auto;
+    animation:slideIn 0.3s ease-out;transition:opacity 0.3s,transform 0.3s;}
+  .toast.hiding{opacity:0;transform:translateX(20px);}
+  .toast-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+  .toast-body{flex:1;}
+  .toast-title{font-weight:500;margin-bottom:2px;}
+  .toast-msg{font-size:12px;color:rgba(255,255,255,0.6);line-height:1.4;}
+  .toast-close{background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;flex-shrink:0;padding:0;}
+  .toast-action{display:inline-block;margin-top:8px;font-size:12px;color:var(--orange-light);text-decoration:none;font-weight:500;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+  .stat-card{background:var(--card);border-radius:16px;padding:18px 20px;border:0.5px solid var(--border);}
+  .stat-card.orange{background:var(--orange-pale);border-color:rgba(217,94,39,0.2);}
+  .stat-card.red{background:var(--red-pale);border-color:rgba(192,57,43,0.15);}
+  .stat-card.green{background:var(--green-pale);border-color:rgba(58,107,62,0.2);}
+  .stat-num{font-family:'Fraunces',serif;font-size:32px;font-weight:600;line-height:1;margin-bottom:4px;}
+  .stat-card.orange .stat-num{color:var(--orange);}
+  .stat-card.red .stat-num{color:var(--red);}
+  .stat-card.green .stat-num{color:var(--green);}
+  .stat-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;}
+
+  /* NOTIF BANNER */
+  .notif-banner{border-radius:18px;padding:18px 22px;margin-bottom:20px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    border:0.5px solid var(--border);background:var(--card);transition:all 0.2s;}
+  .notif-banner.active-state{background:#EAF3EB;border-color:rgba(58,107,62,0.25);}
+  .notif-banner.inactive-state{background:#FFFBF5;border-color:rgba(217,94,39,0.2);}
+  .notif-left{display:flex;align-items:center;gap:14px;}
+  .notif-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .notif-icon.on{background:var(--green-pale);}
+  .notif-icon.off{background:var(--orange-pale);}
+  .notif-title{font-size:15px;font-weight:500;color:var(--warm-dark);margin-bottom:3px;}
+  .notif-sub{font-size:13px;color:var(--text-muted);}
+  /* TOGGLE SWITCH */
+  .toggle{position:relative;width:46px;height:26px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:#D3CEC7;border-radius:100px;cursor:pointer;transition:background 0.25s;}
+  .toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:white;border-radius:50%;transition:transform 0.25s;box-shadow:0 1px 4px rgba(0,0,0,0.15);}
+  .toggle input:checked + .toggle-slider{background:var(--green);}
+  .toggle input:checked + .toggle-slider::before{transform:translateX(20px);}
+  .toggle input:disabled + .toggle-slider{opacity:0.5;cursor:not-allowed;}
+
+  /* MAP BANNER */
+  .map-banner{background:var(--warm-dark);border-radius:18px;padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;}
+  .map-banner:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(28,22,18,0.18);}
+  .map-banner-left{display:flex;align-items:center;gap:14px;}
+  .map-icon{width:44px;height:44px;background:rgba(217,94,39,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .map-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:white;margin-bottom:3px;}
+  .map-sub{font-size:13px;color:rgba(255,255,255,0.5);}
+  .live-pill{display:flex;align-items:center;gap:6px;background:rgba(217,94,39,0.2);color:var(--orange-light);padding:6px 14px;border-radius:100px;font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0;}
+  .live-dot{width:6px;height:6px;background:var(--orange-light);border-radius:50%;animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+  /* PAGE HEADER */
+  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  h1{font-family:'Fraunces',serif;font-size:28px;font-weight:600;letter-spacing:-0.4px;color:var(--warm-dark);}
+  .btn-add{padding:10px 20px;background:var(--orange);color:white;border:none;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+  .btn-add:hover{background:#c0521f;transform:translateY(-1px);}
+
+  /* ALERT */
+  .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;}
+  .alert.error{background:var(--red-pale);color:var(--red);display:block;}
+  .alert.success{background:var(--green-pale);color:var(--green);display:block;}
+
+  /* EMPTY */
+  .empty{text-align:center;padding:60px 24px;background:white;border-radius:20px;border:0.5px solid var(--border);}
+  .empty-emoji{font-size:52px;margin-bottom:14px;}
+  .empty h2{font-family:'Fraunces',serif;font-size:20px;color:var(--warm-dark);margin-bottom:8px;}
+  .empty p{color:var(--text-muted);font-size:14px;margin-bottom:22px;}
+
+  /* PET GRID */
+  .pet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+  .pet-card{background:white;border-radius:18px;border:0.5px solid var(--border);overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
+  .pet-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(28,22,18,0.09);}
+  .pet-photo{width:100%;height:175px;background:linear-gradient(135deg,#f5c18a,#e8956a);display:flex;align-items:center;justify-content:center;font-size:52px;overflow:hidden;}
+  .pet-photo img{width:100%;height:100%;object-fit:cover;}
+  .pet-info{padding:16px;}
+  .pet-name{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--warm-dark);margin-bottom:3px;}
+  .pet-meta{font-size:13px;color:var(--text-muted);margin-bottom:10px;}
+  .pet-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .badge{padding:4px 10px;border-radius:100px;font-size:11px;font-weight:500;}
+  .badge-safe{background:var(--green-pale);color:var(--green);}
+  .badge-lost{background:var(--red-pale);color:var(--red);}
+  .badge-species{background:var(--orange-pale);color:var(--orange);}
+  .pet-actions{display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border);}
+  .btn-action{flex:1;padding:8px;border-radius:10px;border:0.5px solid var(--border);background:transparent;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-align:center;}
+  .btn-action:hover{background:var(--cream);}
+  .btn-action.danger{color:var(--red);}
+  .btn-action.danger:hover{background:var(--red-pale);border-color:var(--red);}
+  .btn-action.report-lost{background:var(--red-pale);color:var(--red);border-color:transparent;}
+  .btn-action.report-found{background:var(--green-pale);color:var(--green);border-color:transparent;}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(28,22,18,0.5);z-index:200;align-items:center;justify-content:center;padding:24px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:white;border-radius:24px;padding:32px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+  .modal h2{font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--warm-dark);margin-bottom:4px;}
+  .modal-sub{font-size:14px;color:var(--text-muted);margin-bottom:22px;}
+  .modal-close{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);margin-top:-4px;}
+  label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;}
+  input[type="text"],input[type="number"],select,textarea{width:100%;padding:11px 14px;border:0.5px solid var(--border);border-radius:12px;background:var(--cream);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:14px;}
+  input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(217,94,39,0.1);}
+  textarea{resize:vertical;min-height:80px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .photo-upload{width:100%;padding:22px;border:1.5px dashed var(--border);border-radius:12px;text-align:center;cursor:pointer;background:var(--cream);margin-bottom:14px;transition:border-color 0.2s;}
+  .photo-upload:hover{border-color:var(--orange);}
+  .photo-upload input{display:none;}
+  .photo-preview{width:100%;height:140px;object-fit:cover;border-radius:10px;margin-bottom:14px;display:none;}
+  .btn-save{width:100%;padding:14px;background:var(--orange);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;}
+  .btn-save:hover{background:#c0521f;}
+  .btn-save:disabled{background:#ccc;cursor:not-allowed;}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-state{text-align:center;padding:48px;color:var(--text-muted);}
+  .big-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+
+  @media(max-width:700px){
+    .stats-row{gap:8px;}
+    .stat-card{padding:14px 12px;}
+    .stat-num{font-size:24px;}
+    .nav-tabs{display:none;}
+    .user-chip{display:none;}
+    .map-banner{flex-direction:column;align-items:flex-start;gap:10px;}
+    .notif-banner{flex-direction:column;align-items:flex-start;gap:12px;}
+  }
+  @media(max-width:500px){
+    .page{padding:20px 16px;}
+    .form-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <div class="logo-dot">🐾</div>
+    PetRescue
+  </a>
+  <div class="nav-tabs">
+    <a href="dashboard.html" class="nav-tab active">Mis mascotas</a>
+    <a href="mapa.html" class="nav-tab">🗺️ Mapa</a>
+  </div>
+  <div class="nav-right">
+    <span class="user-chip" id="userName"></span>
+    <button class="btn-sm" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card orange">
+      <div class="stat-num" id="statTotal">–</div>
+      <div class="stat-label">Mascotas</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-num" id="statLost">–</div>
+      <div class="stat-label">Perdidas</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-num" id="statSafe">–</div>
+      <div class="stat-label">En casa</div>
+    </div>
+  </div>
+
+  <!-- NOTIFICACIONES BANNER -->
+  <div class="notif-banner inactive-state" id="notifBanner">
+    <div class="notif-left">
+      <div class="notif-icon off" id="notifIcon">🔔</div>
+      <div>
+        <div class="notif-title" id="notifTitle">Activar alertas push</div>
+        <div class="notif-sub" id="notifSub">Recibe avisos cuando haya avistamientos o mascotas perdidas cerca</div>
+      </div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="notifToggle" onchange="toggleNotificaciones(this.checked)">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <!-- MAP BANNER -->
+  <a href="mapa.html" class="map-banner">
+    <div class="map-banner-left">
+      <div class="map-icon">🗺️</div>
+      <div>
+        <div class="map-title">Mapa de avistamientos</div>
+        <div class="map-sub">Reportes en tiempo real · Puebla, México</div>
+      </div>
+    </div>
+    <div class="live-pill"><div class="live-dot"></div> En vivo</div>
+  </a>
+
+  <div class="page-header">
+    <h1>Mis mascotas</h1>
+    <button class="btn-add" onclick="openModal()">+ Agregar mascota</button>
+  </div>
+
+  <div id="alertMain" class="alert"></div>
+
+  <div id="loadingState" class="loading-state">
+    <div class="big-spinner"></div>
+    Cargando…
+  </div>
+  <div id="emptyState" class="empty" style="display:none;">
+    <div class="empty-emoji">🐾</div>
+    <h2>Aún no tienes mascotas</h2>
+    <p>Registra a tu compañero y activa su protección.</p>
+    <button class="btn-add" style="margin:0 auto;" onclick="openModal()">+ Registrar mascota</button>
+  </div>
+  <div class="pet-grid" id="petGrid"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Nueva mascota</h2>
+    <p class="modal-sub">Registra a tu compañero para protegerlo.</p>
+    <div id="modalAlert" class="alert"></div>
+    <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+      <input type="file" id="photoInput" accept="image/*" onchange="previewPhoto(event)">
+      <img id="photoPreview" class="photo-preview">
+      <div id="uploadLabel" style="font-size:13px;color:var(--text-muted);">📷 Sube una foto del hocico</div>
+    </div>
+    <label>Nombre *</label>
+    <input type="text" id="petName" placeholder="¿Cómo se llama?">
+    <div class="form-row">
+      <div>
+        <label>Especie *</label>
+        <select id="petSpecies">
+          <option value="">Selecciona</option>
+          <option value="Perro">Perro</option>
+          <option value="Gato">Gato</option>
+          <option value="Conejo">Conejo</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div>
+        <label>Edad (años)</label>
+        <input type="number" id="petAge" placeholder="3" min="0" max="30">
+      </div>
+    </div>
+    <label>Raza</label>
+    <input type="text" id="petBreed" placeholder="Ej: Labrador…">
+    <label>Señas distintivas</label>
+    <textarea id="petDesc" placeholder="Color, marcas, collar…"></textarea>
+    <button class="btn-save" id="btnSave" onclick="savePet()">Guardar →</button>
+  </div>
+</div>
+
+<script type="module">
+import { auth, db, storage } from './firebase-config.js';
+import { onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { collection, addDoc, getDocs, deleteDoc, doc, query, where,
+         orderBy, serverTimestamp, updateDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { suscribir, desuscribir, notifActivas, escucharMensajes }
+  from './notificaciones.js';
+
+let currentUser = null;
+let photoFile   = null;
+
+// ── AUTH ─────────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  currentUser = user;
+  document.getElementById('userName').textContent = user.displayName || user.email;
+  await loadPets();
+  await cargarEstadoNotif();
+  escucharMensajes(mostrarToast);
+});
+
+window.logout = async () => {
+  await signOut(auth);
+  window.location.href = 'login.html';
+};
+
+// ── MASCOTAS ─────────────────────────────────────────────
+async function loadPets() {
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('emptyState').style.display   = 'none';
+  document.getElementById('petGrid').innerHTML           = '';
+  try {
+    const q    = query(collection(db,'mascotas'), where('uid','==',currentUser.uid), orderBy('creadoEn','desc'));
+    const snap = await getDocs(q);
+    document.getElementById('loadingState').style.display = 'none';
+    const pets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('statTotal').textContent = pets.length;
+    document.getElementById('statLost').textContent  = pets.filter(p => p.estado === 'perdido').length;
+    document.getElementById('statSafe').textContent  = pets.filter(p => p.estado !== 'perdido').length;
+    if (pets.length === 0) { document.getElementById('emptyState').style.display = 'block'; return; }
+    pets.forEach(renderPetCard);
+  } catch(e) {
+    document.getElementById('loadingState').style.display = 'none';
+    showMainAlert('Error al cargar: ' + e.message, 'error');
+  }
+}
+
+function renderPetCard(pet) {
+  const grid = document.getElementById('petGrid');
+  const card = document.createElement('div');
+  card.className = 'pet-card';
+  const isLost = pet.estado === 'perdido';
+  card.innerHTML = `
+    <div class="pet-photo">
+      ${pet.fotoUrl ? `<img src="${pet.fotoUrl}" alt="${pet.nombre}">` : '🐾'}
+    </div>
+    <div class="pet-info">
+      <div class="pet-name">${pet.nombre}</div>
+      <div class="pet-meta">${[pet.raza, pet.edad ? pet.edad+' años' : null].filter(Boolean).join(' · ') || 'Sin datos adicionales'}</div>
+      <div class="pet-badges">
+        ${pet.especie ? `<span class="badge badge-species">${pet.especie}</span>` : ''}
+        <span class="badge ${isLost ? 'badge-lost' : 'badge-safe'}">${isLost ? '🔴 Perdido' : '✅ En casa'}</span>
+      </div>
+      <div class="pet-actions">
+        <button class="btn-action ${isLost ? 'report-found' : 'report-lost'}"
+          onclick="toggleLost('${pet.id}',${isLost})">
+          ${isLost ? '✅ Encontrado' : '🔴 Perdido'}
+        </button>
+        <a href="mapa.html" class="btn-action" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">🗺️ Mapa</a>
+        <button class="btn-action danger" onclick="deletePet('${pet.id}')">🗑</button>
+      </div>
+    </div>`;
+  grid.appendChild(card);
+}
+
+window.savePet = async function() {
+  const name    = document.getElementById('petName').value.trim();
+  const species = document.getElementById('petSpecies').value;
+  if (!name || !species) return showModalAlert('Nombre y especie son obligatorios.', 'error');
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+  try {
+    let fotoUrl = null;
+    if (photoFile) {
+      const sRef = ref(storage, `mascotas/${currentUser.uid}/${Date.now()}_${photoFile.name}`);
+      await uploadBytes(sRef, photoFile);
+      fotoUrl = await getDownloadURL(sRef);
+    }
+    await addDoc(collection(db,'mascotas'), {
+      uid: currentUser.uid, nombre: name, especie: species,
+      edad: document.getElementById('petAge').value || null,
+      raza: document.getElementById('petBreed').value.trim() || null,
+      descripcion: document.getElementById('petDesc').value.trim() || null,
+      fotoUrl, estado: 'en_casa', creadoEn: serverTimestamp(),
+    });
+    closeModal(); await loadPets();
+    showMainAlert('¡Mascota registrada! 🐾', 'success');
+  } catch(e) { showModalAlert('Error: ' + e.message, 'error'); }
+  btn.disabled = false; btn.innerHTML = 'Guardar →';
+};
+
+window.toggleLost = async function(id, isLost) {
+  try {
+    await updateDoc(doc(db,'mascotas',id), { estado: isLost ? 'en_casa' : 'perdido' });
+    await loadPets();
+    showMainAlert(isLost ? '¡Mascota encontrada! 🎉' : 'Reporte activado. La comunidad fue notificada 📣', 'success');
+  } catch(e) { showMainAlert('Error: ' + e.message, 'error'); }
+};
+
+window.deletePet = async function(id) {
+  if (!confirm('¿Eliminar esta mascota?')) return;
+  try { await deleteDoc(doc(db,'mascotas',id)); await loadPets(); }
+  catch(e) { showMainAlert('Error: ' + e.message, 'error'); }
+};
+
+// ── NOTIFICACIONES ───────────────────────────────────────
+async function cargarEstadoNotif() {
+  const activas = await notifActivas(currentUser.uid);
+  actualizarUINotif(activas);
+}
+
+function actualizarUINotif(activas) {
+  const toggle  = document.getElementById('notifToggle');
+  const banner  = document.getElementById('notifBanner');
+  const icon    = document.getElementById('notifIcon');
+  const title   = document.getElementById('notifTitle');
+  const sub     = document.getElementById('notifSub');
+
+  toggle.checked = activas;
+
+  if (activas) {
+    banner.className = 'notif-banner active-state';
+    icon.className   = 'notif-icon on';
+    icon.textContent = '🔔';
+    title.textContent = 'Alertas activadas';
+    sub.textContent   = 'Recibirás avisos de avistamientos y mascotas perdidas en Puebla';
+  } else {
+    banner.className = 'notif-banner inactive-state';
+    icon.className   = 'notif-icon off';
+    icon.textContent = '🔕';
+    title.textContent = 'Activar alertas push';
+    sub.textContent   = 'Recibe avisos cuando haya avistamientos o mascotas perdidas cerca';
+  }
+}
+
+window.toggleNotificaciones = async function(activar) {
+  const toggle = document.getElementById('notifToggle');
+  toggle.disabled = true;
+  try {
+    if (activar) {
+      await suscribir(currentUser.uid);
+      actualizarUINotif(true);
+      showMainAlert('✅ Alertas activadas. Te avisaremos de avistamientos en Puebla.', 'success');
+    } else {
+      await desuscribir(currentUser.uid);
+      actualizarUINotif(false);
+      showMainAlert('Alertas desactivadas.', 'success');
+    }
+  } catch(e) {
+    toggle.checked = !activar;
+    actualizarUINotif(!activar);
+    showMainAlert('Error: ' + e.message, 'error');
+  }
+  toggle.disabled = false;
+};
+
+// ── TOAST (notif en primer plano) ────────────────────────
+function mostrarToast(payload) {
+  const notif  = payload.notification || {};
+  const titulo = notif.title || 'PetRescue';
+  const cuerpo = notif.body  || '';
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <div class="toast-icon">🐾</div>
+    <div class="toast-body">
+      <div class="toast-title">${titulo}</div>
+      ${cuerpo ? `<div class="toast-msg">${cuerpo}</div>` : ''}
+      <a href="mapa.html" class="toast-action">Ver en mapa →</a>
+    </div>
+    <button class="toast-close" onclick="cerrarToast(this.parentElement)">✕</button>`;
+
+  document.getElementById('toastContainer').appendChild(toast);
+
+  // Auto-cerrar tras 6 segundos
+  setTimeout(() => cerrarToast(toast), 6000);
+}
+
+window.cerrarToast = function(toast) {
+  toast.classList.add('hiding');
+  setTimeout(() => toast.remove(), 300);
+};
+
+// ── MODAL UTILS ──────────────────────────────────────────
+window.openModal = () => {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+window.closeModal = () => {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  ['petName','petAge','petBreed','petDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('petSpecies').value = '';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('uploadLabel').style.display = 'block';
+  document.getElementById('modalAlert').className = 'alert';
+  photoFile = null;
+};
+window.previewPhoto = e => {
+  const file = e.target.files[0]; if (!file) return;
+  photoFile = file;
+  const p = document.getElementById('photoPreview');
+  p.src = URL.createObjectURL(file); p.style.display = 'block';
+  document.getElementById('uploadLabel').style.display = 'none';
+};
+
+function showModalAlert(msg, type) {
+  const b = document.getElementById('modalAlert');
+  b.textContent = msg; b.className = 'alert ' + type;
+}
+function showMainAlert(msg, type) {
+  const b = document.getElementById('alertMain');
+  b.textContent = msg; b.className = 'alert ' + type;
+  setTimeout(() => { b.className = 'alert'; }, 5000);
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) window.closeModal();
+});
+</script>
+</body>
+</html>

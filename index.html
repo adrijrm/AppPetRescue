@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PetRescue — Puebla, México</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F3ED;
+    --warm-dark: #1C1612;
+    --orange: #D95E27;
+    --orange-light: #F2905A;
+    --orange-pale: #FBE8DA;
+    --green: #3A6B3E;
+    --green-pale: #EAF3EB;
+    --text: #2A2218;
+    --text-muted: #7A6F63;
+    --border: rgba(44,34,24,0.12);
+    --card-bg: #FFFFFF;
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 32px;
+    background: rgba(247,243,237,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 20px; font-weight: 600;
+    color: var(--warm-dark);
+    letter-spacing: -0.3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .paw-icon {
+    width: 26px; height: 26px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .nav-links {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .btn-ghost {
+    padding: 8px 18px; border-radius: 100px;
+    border: 0.5px solid var(--border);
+    background: transparent; color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover { background: rgba(44,34,24,0.06); border-color: rgba(44,34,24,0.25); }
+  .btn-primary {
+    padding: 9px 20px; border-radius: 100px;
+    background: var(--orange); color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    text-decoration: none; border: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #c0521f; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 100px 32px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 75% 50%, rgba(217,94,39,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 80% at 20% 80%, rgba(58,107,62,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 1100px; margin: 0 auto; width: 100%;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--orange-pale); color: var(--orange);
+    font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 100px;
+    margin-bottom: 24px;
+  }
+  .hero-tag span { width: 6px; height: 6px; background: var(--orange); border-radius: 50%; display: inline-block; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(42px, 5vw, 68px);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    color: var(--warm-dark);
+    margin-bottom: 20px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--orange);
+  }
+  .hero-sub {
+    font-size: 17px; line-height: 1.6;
+    color: var(--text-muted); max-width: 440px;
+    margin-bottom: 32px;
+  }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .btn-big {
+    padding: 14px 28px; border-radius: 100px;
+    background: var(--orange); color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 500; cursor: pointer;
+    text-decoration: none; border: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-big:hover { background: #c0521f; transform: translateY(-2px); }
+  .btn-big-ghost {
+    padding: 14px 28px; border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px; cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-big-ghost:hover { background: rgba(44,34,24,0.05); border-color: rgba(44,34,24,0.3); }
+  .hero-stats {
+    display: flex; gap: 32px; margin-top: 40px; flex-wrap: wrap;
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; color: var(--warm-dark); }
+  .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* HERO VISUAL */
+  .hero-visual { position: relative; display: flex; justify-content: center; align-items: center; }
+  .phone-mockup {
+    width: 260px; height: 520px;
+    background: var(--warm-dark);
+    border-radius: 40px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(28,22,18,0.22), 0 0 0 1.5px rgba(255,255,255,0.08);
+  }
+  .phone-screen {
+    position: absolute; inset: 10px;
+    border-radius: 32px;
+    background: var(--cream);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .phone-status {
+    height: 36px; background: var(--warm-dark);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; font-size: 11px; color: rgba(255,255,255,0.6);
+  }
+  .phone-body {
+    flex: 1; padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .phone-app-logo {
+    font-family: 'Fraunces', serif; font-size: 16px; color: var(--warm-dark);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .phone-app-logo .dot { width: 18px; height: 18px; background: var(--orange); border-radius: 50%; font-size: 9px; display:flex; align-items:center; justify-content:center; color:white; }
+  .phone-map-area {
+    flex: 1; background: #E8E2D8;
+    border-radius: 12px; position: relative; overflow: hidden;
+    min-height: 200px;
+  }
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(44,34,24,0.08) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(44,34,24,0.08) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .map-pin {
+    position: absolute; width: 28px; height: 28px;
+    background: var(--orange); border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(217,94,39,0.4);
+  }
+  .map-pin::after { content:''; width:10px; height:10px; background:white; border-radius:50%; transform:rotate(45deg); }
+  .map-pin.p1 { top: 30%; left: 40%; }
+  .map-pin.p2 { top: 55%; left: 65%; background: var(--green); box-shadow: 0 4px 12px rgba(58,107,62,0.4); }
+  .map-pin.p3 { top: 20%; left: 70%; }
+  .map-radius { position: absolute; top: 28%; left: 38%; width: 60px; height: 60px; border: 1.5px dashed rgba(217,94,39,0.4); border-radius: 50%; animation: expand 3s infinite ease-out; }
+  @keyframes expand { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2.5);opacity:0} }
+  .map-label {
+    position: absolute; bottom: 10px; left: 10px;
+    background: white; border-radius: 8px; padding: 4px 8px;
+    font-size: 10px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .live-dot { width: 5px; height: 5px; background: #E53935; border-radius: 50%; animation: pulse 1s infinite; }
+  .phone-card {
+    background: white; border-radius: 12px; padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    border: 0.5px solid var(--border);
+  }
+  .pet-avatar {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #f5c18a, #e8956a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .pet-name { font-size: 13px; font-weight: 500; color: var(--warm-dark); }
+  .pet-status { font-size: 11px; color: var(--green); }
+  .float-badge {
+    position: absolute; right: -20px; top: 80px;
+    background: white; border-radius: 12px; padding: 10px 14px;
+    box-shadow: 0 8px 24px rgba(28,22,18,0.12);
+    font-size: 12px; color: var(--text);
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+    border: 0.5px solid var(--border);
+  }
+  .float-badge2 {
+    position: absolute; left: -32px; bottom: 100px;
+    background: var(--orange); border-radius: 12px; padding: 10px 14px;
+    box-shadow: 0 8px 24px rgba(217,94,39,0.25);
+    font-size: 12px; color: white;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* FEATURES */
+  .section { padding: 80px 32px; max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--orange); font-weight: 500; margin-bottom: 12px;
+  }
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 600; line-height: 1.1;
+    letter-spacing: -0.8px;
+    color: var(--warm-dark);
+    margin-bottom: 16px;
+  }
+  .section-sub {
+    font-size: 17px; color: var(--text-muted);
+    line-height: 1.6; max-width: 480px;
+    margin-bottom: 48px;
+  }
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .feature-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    padding: 28px; border: 0.5px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(28,22,18,0.08); }
+  .feature-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    margin-bottom: 18px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .icon-orange { background: var(--orange-pale); }
+  .icon-green { background: var(--green-pale); }
+  .icon-blue { background: #E6F0FB; }
+  .feature-title { font-size: 16px; font-weight: 500; color: var(--warm-dark); margin-bottom: 8px; }
+  .feature-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+  /* HOW IT WORKS */
+  .how-section {
+    background: var(--warm-dark); color: white;
+    padding: 80px 32px; margin: 0;
+  }
+  .how-inner { max-width: 1100px; margin: 0 auto; }
+  .how-section .section-label { color: var(--orange-light); }
+  .how-section h2 { color: white; margin-bottom: 16px; }
+  .how-section .section-sub { color: rgba(255,255,255,0.55); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; margin-top: 48px; }
+  .step { position: relative; }
+  .step::after {
+    content: '→'; position: absolute; right: -28px; top: 14px;
+    color: rgba(255,255,255,0.2); font-size: 20px;
+  }
+  .step:last-child::after { display: none; }
+  .step-num {
+    font-family: 'Fraunces', serif;
+    font-size: 48px; font-weight: 600;
+    color: var(--orange-light); opacity: 0.6;
+    line-height: 1; margin-bottom: 12px;
+  }
+  .step-title { font-size: 18px; font-weight: 500; margin-bottom: 10px; }
+  .step-desc { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.7; }
+
+  /* CTA */
+  .cta-section {
+    padding: 80px 32px; text-align: center;
+  }
+  .cta-inner {
+    max-width: 640px; margin: 0 auto;
+    background: var(--orange-pale);
+    border-radius: 28px; padding: 60px 48px;
+    border: 0.5px solid rgba(217,94,39,0.15);
+  }
+  .cta-inner h2 { margin-bottom: 16px; }
+  .cta-inner .section-sub { margin: 0 auto 32px; text-align: center; }
+  .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .trust-row {
+    display: flex; gap: 24px; justify-content: center;
+    margin-top: 28px; flex-wrap: wrap;
+  }
+  .trust-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-muted);
+  }
+  .trust-check { color: var(--green); font-size: 14px; }
+
+  /* FOOTER */
+  footer {
+    background: var(--warm-dark); color: rgba(255,255,255,0.4);
+    padding: 32px; text-align: center; font-size: 13px;
+  }
+  footer strong { color: rgba(255,255,255,0.7); }
+
+  /* HAMBURGER MENU */
+  .hamburger {
+    display: none; flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+  }
+  .hamburger span { display: block; width: 22px; height: 1.5px; background: var(--text); border-radius: 2px; }
+  .mobile-menu {
+    display: none;
+    position: fixed; inset: 0; z-index: 99;
+    background: var(--cream);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 24px;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a {
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600;
+    color: var(--warm-dark); text-decoration: none;
+  }
+  .mobile-menu .close {
+    position: absolute; top: 20px; right: 28px;
+    background: none; border: none; font-size: 28px; cursor: pointer;
+    color: var(--text-muted);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 48px; text-align: center; }
+    .hero-visual { display: none; }
+    .hero-sub { margin: 0 auto 32px; }
+    .hero-actions { justify-content: center; }
+    .hero-stats { justify-content: center; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .steps { grid-template-columns: 1fr; gap: 32px; }
+    .step::after { display: none; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+  }
+  @media (max-width: 600px) {
+    nav { padding: 14px 20px; }
+    .hero { padding: 90px 20px 50px; }
+    .section { padding: 60px 20px; }
+    .how-section { padding: 60px 20px; }
+    .cta-section { padding: 60px 20px; }
+    .cta-inner { padding: 40px 24px; border-radius: 20px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 20px; }
+    footer { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="paw-icon">🐾</div>
+    PetRescue
+  </div>
+  <div class="nav-links">
+    <a href="#features" class="btn-ghost">Cómo funciona</a>
+    <a href="login.html" class="btn-ghost">Iniciar sesión</a>
+    <a href="onboarding.html" class="btn-primary">Empezar gratis →</a>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close" onclick="toggleMenu()">✕</button>
+  <a href="#features" onclick="toggleMenu()">Cómo funciona</a>
+  <a href="login.html">Iniciar sesión</a>
+  <a href="onboarding.html" style="color: var(--orange);">Empezar →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">
+        <span></span> 3 reportes activos ahora mismo
+      </div>
+      <h1>Recupera a tu<br>mascota <em>perdida</em></h1>
+      <p class="hero-sub">Biometría facial, GPS colaborativo y una red de refugios en Puebla. Sin collar, sin microchip — solo una foto.</p>
+      <div class="hero-actions">
+        <a href="onboarding.html" class="btn-big">Registrar mascota →</a>
+        <a href="login.html" class="btn-big-ghost">Ya tengo cuenta</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">1,200+</span>
+          <span class="stat-label">Mascotas recuperadas</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">100%</span>
+          <span class="stat-label">Privado y gratuito</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">Puebla</span>
+          <span class="stat-label">Red local activa</span>
+        </div>
+      </div>
+    </div>
+    <!-- Phone Mockup -->
+    <div class="hero-visual">
+      <div class="float-badge">
+        📍 Luna encontrada · hace 12 min
+      </div>
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-status">
+            <span>9:41</span><span>●●● ▲ 100%</span>
+          </div>
+          <div class="phone-body">
+            <div class="phone-app-logo">
+              <div class="dot">🐾</div>
+              PetRescue
+            </div>
+            <div class="phone-map-area">
+              <div class="map-grid"></div>
+              <div class="map-radius"></div>
+              <div class="map-pin p1"></div>
+              <div class="map-pin p2"></div>
+              <div class="map-pin p3"></div>
+              <div class="map-label">
+                <div class="live-dot"></div>
+                En vivo · Puebla Centro
+              </div>
+            </div>
+            <div class="phone-card">
+              <div class="pet-avatar">🐕</div>
+              <div>
+                <div class="pet-name">Mango, 3 años</div>
+                <div class="pet-status">✓ Perfil verificado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="float-badge2">
+        🔒 100% privado
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <p class="section-label">Tecnología</p>
+  <h2>Diseñado para encontrar<br>mascotas reales</h2>
+  <p class="section-sub">Tres herramientas poderosas que trabajan juntas para aumentar tus probabilidades de reencuentro.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon icon-orange">📸</div>
+      <div class="feature-title">Biometría facial</div>
+      <div class="feature-desc">Una foto del hocico crea una identidad digital única. La IA reconoce a tu mascota incluso sin collar ni microchip.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-green">🗺️</div>
+      <div class="feature-title">GPS colaborativo</div>
+      <div class="feature-desc">La comunidad reporta avistamientos en tiempo real. Ve exactamente dónde fue visto tu perro o gato en el mapa.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-blue">🏠</div>
+      <div class="feature-title">Red de refugios</div>
+      <div class="feature-desc">Conectado a la red de refugios y veterinarios de Puebla. Si tu mascota llega ahí, recibes una alerta inmediata.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-orange">🔒</div>
+      <div class="feature-title">100% privado</div>
+      <div class="feature-desc">Tu información personal nunca se comparte. Solo ves lo que necesitas y tu mascota queda protegida.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-green">✅</div>
+      <div class="feature-title">Completamente gratis</div>
+      <div class="feature-desc">Sin suscripciones, sin pagos. PetRescue es un servicio comunitario para Puebla, sin costo para nadie.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon icon-blue">🔔</div>
+      <div class="feature-title">Alertas en tiempo real</div>
+      <div class="feature-desc">Notificaciones instantáneas cuando alguien reporta un avistamiento cerca de tu zona de búsqueda.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="how-inner">
+    <p class="section-label">Proceso</p>
+    <h2>Tres pasos y listo</h2>
+    <p class="section-sub">Registrar a tu mascota toma menos de 2 minutos. No necesitas experiencia técnica.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Toma una foto</div>
+        <div class="step-desc">Una foto del hocico de tu mascota es suficiente para crear su perfil biométrico único.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Activa el reporte</div>
+        <div class="step-desc">Si tu mascota se pierde, activa el reporte. La comunidad y refugios de Puebla son notificados al instante.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Reencuentro</div>
+        <div class="step-desc">Recibe avistamientos en el mapa y coordina el rescate directamente desde la app.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <p class="section-label" style="text-align:center;">Empieza hoy</p>
+    <h2>No esperes a que se pierda</h2>
+    <p class="section-sub">Registrar a tu mascota ahora es la mejor forma de protegerla. Es gratis, privado y toma 2 minutos.</p>
+    <div class="cta-actions">
+      <a href="onboarding.html" class="btn-big">Empezar gratis →</a>
+      <a href="login.html" class="btn-big-ghost">Ya tengo cuenta</a>
+    </div>
+    <div class="trust-row">
+      <div class="trust-item"><span class="trust-check">✓</span> Sin registro forzoso</div>
+      <div class="trust-item"><span class="trust-check">✓</span> Datos privados</div>
+      <div class="trust-item"><span class="trust-check">✓</span> 100% gratuito</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>PetRescue</strong> · Puebla, México · Rescate animal colaborativo<br>
+  <span style="margin-top:8px;display:block;">Hecho con ❤️ para la comunidad de Puebla</span>
+</footer>
+
+<script>
+function toggleMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+</script>
+</body>
+</html>

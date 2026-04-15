@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PetRescue — Iniciar sesión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#F7F3ED;--warm-dark:#1C1612;--orange:#D95E27;--orange-pale:#FBE8DA;--text:#2A2218;--text-muted:#7A6F63;--border:rgba(44,34,24,0.12);--green:#3A6B3E;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{background:#fff;border-radius:24px;padding:clamp(32px,5vw,52px);width:100%;max-width:420px;border:0.5px solid var(--border);box-shadow:0 24px 60px rgba(28,22,18,0.07);}
+  .logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;text-decoration:none;}
+  .logo-dot{width:32px;height:32px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .logo-name{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--warm-dark);}
+  .tabs{display:flex;margin-bottom:28px;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;}
+  .tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:14px;background:transparent;border:none;color:var(--text-muted);font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+  .tab.active{background:var(--orange);color:white;font-weight:500;}
+  label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;}
+  input[type="email"],input[type="password"],input[type="text"]{width:100%;padding:12px 16px;border:0.5px solid var(--border);border-radius:12px;background:var(--cream);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:14px;}
+  input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(217,94,39,0.1);}
+  .btn-submit{width:100%;padding:14px;background:var(--orange);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;transition:background 0.2s,transform 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-submit:hover{background:#c0521f;transform:translateY(-1px);}
+  .btn-submit:disabled{background:#ccc;transform:none;cursor:not-allowed;}
+  .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none;}
+  .alert.error{background:#FDECEA;color:#C0392B;display:block;}
+  .alert.success{background:#EAF3EB;color:var(--green);display:block;}
+  .divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text-muted);font-size:13px;}
+  .divider::before,.divider::after{content:'';flex:1;height:0.5px;background:var(--border);}
+  .btn-ghost-full{width:100%;padding:13px;background:transparent;color:var(--text);border:0.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;text-align:center;}
+  .btn-ghost-full:hover{background:var(--cream);}
+  .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:13px;text-decoration:none;margin-bottom:20px;}
+  .back-link:hover{color:var(--text);}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .panel{display:none;}.panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="card">
+  <a href="index.html" class="back-link">← Inicio</a>
+  <a href="index.html" class="logo">
+    <div class="logo-dot">🐾</div>
+    <span class="logo-name">PetRescue</span>
+  </a>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('login')">Iniciar sesión</button>
+    <button class="tab" onclick="switchTab('register')">Crear cuenta</button>
+  </div>
+  <div id="alertBox" class="alert"></div>
+  <!-- LOGIN -->
+  <div class="panel active" id="loginPanel">
+    <label>Correo electrónico</label>
+    <input type="email" id="loginEmail" placeholder="tu@correo.mx" autocomplete="email">
+    <label>Contraseña</label>
+    <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn-submit" id="btnLogin" onclick="handleLogin()">Entrar →</button>
+    <div class="divider">o</div>
+    <a href="dashboard.html" class="btn-ghost-full">Continuar sin cuenta</a>
+  </div>
+  <!-- REGISTER -->
+  <div class="panel" id="registerPanel">
+    <label>Nombre completo</label>
+    <input type="text" id="regName" placeholder="Tu nombre">
+    <label>Correo electrónico</label>
+    <input type="email" id="regEmail" placeholder="tu@correo.mx">
+    <label>Contraseña</label>
+    <input type="password" id="regPass" placeholder="Mínimo 6 caracteres">
+    <button class="btn-submit" id="btnRegister" onclick="handleRegister()">Crear cuenta →</button>
+  </div>
+</div>
+
+<script type="module">
+import { auth, db } from './firebase-config.js';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+onAuthStateChanged(auth, user => { if (user) window.location.href = 'dashboard.html'; });
+
+function showAlert(msg, type) {
+  const box = document.getElementById('alertBox');
+  box.textContent = msg;
+  box.className = 'alert ' + type;
+}
+function setLoading(id, on, label) {
+  const btn = document.getElementById(id);
+  btn.disabled = on;
+  btn.innerHTML = on ? '<div class="spinner"></div>' : label;
+}
+
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0)===(tab==='login')));
+  document.getElementById('loginPanel').classList.toggle('active', tab==='login');
+  document.getElementById('registerPanel').classList.toggle('active', tab==='register');
+  document.getElementById('alertBox').className = 'alert';
+}
+
+window.handleLogin = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) return showAlert('Por favor llena todos los campos.', 'error');
+  setLoading('btnLogin', true, 'Entrar →');
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    window.location.href = 'dashboard.html';
+  } catch(e) {
+    const msgs = {'auth/user-not-found':'No encontramos esa cuenta.','auth/wrong-password':'Contraseña incorrecta.','auth/invalid-email':'El correo no es válido.','auth/too-many-requests':'Demasiados intentos. Intenta más tarde.'};
+    showAlert(msgs[e.code] || 'Error al iniciar sesión.', 'error');
+    setLoading('btnLogin', false, 'Entrar →');
+  }
+}
+
+window.handleRegister = async function() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  if (!name || !email || !pass) return showAlert('Por favor llena todos los campos.', 'error');
+  if (pass.length < 6) return showAlert('La contraseña debe tener al menos 6 caracteres.', 'error');
+  setLoading('btnRegister', true, 'Crear cuenta →');
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'usuarios', cred.user.uid), {
+      nombre: name, email, creadoEn: serverTimestamp(), ciudad: 'Puebla'
+    });
+    window.location.href = 'dashboard.html';
+  } catch(e) {
+    const msgs = {'auth/email-already-in-use':'Ese correo ya tiene cuenta.','auth/invalid-email':'El correo no es válido.','auth/weak-password':'Contraseña muy débil.'};
+    showAlert(msgs[e.code] || 'Error al crear cuenta.', 'error');
+    setLoading('btnRegister', false, 'Crear cuenta →');
+  }
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key==='Enter') window.handleLogin(); });
+</script>
+</body>
+</html>
