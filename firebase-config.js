@@ -12,13 +12,12 @@ import { getFirestore }  from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getStorage }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDb6fozFyn_7NBofGztR03VI2Kfzx41ez0",
-  authDomain: "petrescue-c087f.firebaseapp.com",
-  projectId: "petrescue-c087f",
-  storageBucket: "petrescue-c087f.firebasestorage.app",
+  apiKey:            "AIzaSyDb6fozFyn_7NBofGztR03VI2Kfzx41ez0",
+  authDomain:        "petrescue-c087f.firebaseapp.com",
+  projectId:         "petrescue-c087f",
+  storageBucket:     "petrescue-c087f.firebasestorage.app",
   messagingSenderId: "1029578348032",
-  appId: "1:1029578348032:web:65b4b82e6b826cb355eae5",
-  measurementId: "G-YXN9Y4QS4E"
+  appId:             "1:1029578348032:web:65b4b82e6b826cb355eae5"
 };
 
 // Initialize Firebase
