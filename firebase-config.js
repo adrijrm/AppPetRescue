@@ -1,9 +1,3 @@
-// ============================================================
-//  PETRESCUE MX — Configuración de Firebase
-//  1. Ve a https://console.firebase.google.com
-//  2. Proyecto → Configuración → Tus apps → </> Web
-//  3. Copia los valores y pégalos aquí
-// ============================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-analytics.js";
